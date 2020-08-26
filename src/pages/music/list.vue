@@ -31,7 +31,7 @@
 				search: '',
 				loadMoreText: '加载中...',
 				pageNo:1,
-				pageSize: 20,
+				pageSize: 100,
 				dataList: [],
 				loading: false,
 				backgroundAudioManager: null,
