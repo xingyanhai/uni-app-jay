@@ -24,6 +24,7 @@
 		mapState,
 		mapMutations
 	} from 'vuex'
+
 	export default {
 		data() {
 			return {
@@ -32,7 +33,10 @@
 				pageNo:1,
 				pageSize: 20,
 				dataList: [],
-				loading: false
+				loading: false,
+				backgroundAudioManager: null,
+				innerAudioContext: null,
+				poster: 'https://tvax3.sinaimg.cn/crop.0.0.1080.1080.180/6e48db9ely8ghjt7jvbg2j20u00u0god.jpg?KID=imgbed,tva&Expires=1598438463&ssig=%2FUmJE4SGIz',
 			};
 		},
 		components: {SearchBtn},
@@ -96,7 +100,52 @@
 			},
 
 			toDetail (data) {
-				console.log(data)
+				uni.showLoading({
+					title: '请稍后...'
+				})
+				let fileIdPrefix = 'cloud://test-xyh-jay.7465-test-xyh-jay-1302967778/jay'
+				wx.cloud.getTempFileURL({
+					fileList: [`${fileIdPrefix}/${data.fileID}`],
+					success: res => {
+						console.log(res.fileList)
+						this.play({
+							...data,
+							...res.fileList[0]
+						})
+						uni.hideLoading()
+					},
+					fail: console.error
+				})
+			},
+			play (item) {
+				console.log(item)
+				let backgroundAudioManager = this.backgroundAudioManager
+				backgroundAudioManager.title = item.name
+				backgroundAudioManager.epname = '周杰伦'
+				backgroundAudioManager.singer = '周杰伦'
+				backgroundAudioManager.coverImgUrl = this.poster
+				// 设置了 src 之后会自动播放
+				backgroundAudioManager.src = item.fileID
+				console.log('play',item, backgroundAudioManager)
+				backgroundAudioManager.play()
+				backgroundAudioManager.onError(e => {
+					console.log('error', e)
+				})
+				backgroundAudioManager.onPlay(e => {
+					console.log('Play', e)
+				})
+
+				// let innerAudioContext = this.innerAudioContext
+				// innerAudioContext.autoplay = true
+				// innerAudioContext.obeyMuteSwitch = false
+				// innerAudioContext.src = item.tempFileURL
+				// innerAudioContext.onPlay(() => {
+				// 	console.log('开始播放')
+				// })
+				// innerAudioContext.onError((res) => {
+				// 	console.log(res.errMsg)
+				// 	console.log(res.errCode)
+				// })
 			}
 		},
 		onReachBottom() {
@@ -110,6 +159,21 @@
 		onShareAppMessage: function (res) {
 		},
 		async onLoad() {
+			this.backgroundAudioManager = wx.getBackgroundAudioManager()
+			// this.innerAudioContext = wx.createInnerAudioContext()
+			wx.setInnerAudioOption({
+				// （仅在 iOS 生效）是否遵循静音开关，设置为 false 之后，即使是在静音模式下，也能播放声音
+				obeyMuteSwitch: false,
+				// 是否与其他音频混播，设置为 true 之后，不会终止其他应用或微信内的音乐
+				mixWithOther: false,
+				success () {
+					console.log('wx.setInnerAudioOption success')
+				},
+				fail(e) {
+					console.log('wx.setInnerAudioOption fail')
+					console.log(e)
+				}
+			})
 			this.getData()
 		}
 	}
