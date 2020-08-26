@@ -7,30 +7,7 @@
 				  :key="index"
 				  @tap="toDetail(value)">
 				<view class="title">
-					{{value.questionName}}
-				</view>
-				<view class="content">
-					<view class="left">
-						<view class="author">
-							<view class="author-left">
-								<image class="author-img" :src="value.authorImg"></image>
-								<view class="author-name">{{value.authorName}}</view>
-							</view>
-							<view class="author-text">{{value.authorBadgeText}}</view>
-						</view>
-						<view>
-							<view class="answer-up-num">{{value.answerUpNum}}赞</view>
-							<view>共{{value.answerImgList.length}}张图片</view>
-						</view>
-						<view>{{value.editTimeText}}</view>
-					</view>
-					<view class="right">
-						<image class="img" mode="aspectFill" :src="value.answerImgList[0]"></image>
-					</view>
-				</view>
-				<view class="bottom">
-					<view class="num1">问题关注量{{value.questionFollowNum}}</view>
-					<view>浏览量{{value.questionReadNum}}</view>
+					{{value.name}}
 				</view>
 			</view>
 		</view>
@@ -85,7 +62,7 @@
 				let res = await wx.cloud.callFunction({
 					name: 'getDbListData',
 					data: {
-						dbName: 'zhihuImgAnswer',
+						dbName: 'musicList',
 						pageNo: this.pageNo,
 						pageSize: this.pageSize,
 						limitType: 3,
@@ -119,13 +96,10 @@
 			},
 
 			toDetail (data) {
-				uni.navigateTo({
-					url: `/pages/answer/detail?id=${data._id}`
-				})
+				console.log(data)
 			}
 		},
 		onReachBottom() {
-			console.log('滑动到页面底部')
 			if ((this.pageNo -1) *this.pageSize >= this.totalCount || this.dataList.length >= this.totalCount) {
 				this.loadMoreText = '没有更多了'
 				return;
@@ -146,11 +120,7 @@
 .wrap
 	display block
 	width 100%
-.search-box
-	box-sizing border-box
-	display block
-	width 100%
-	padding 10px
+
 
 .list
 	display flex
@@ -166,58 +136,6 @@
 			width 100%;
 			font-size 18px
 			margin 5px 0
-		.content
-			display flex
-			width 100%
-			overflow hidden
-			justify-content space-between
-			.left
-				display block
-				flex 1
-				max-width calc(100vw - 120px)
-				.answer-up-num
-					margin-right 10px
-				.author
-					line-height 30px
-					width 100%
-					display flex
-					align-items center
-					font-size 12px;
-					.author-left
-						display flex
-						align-items center
-						.author-img
-							width 22px;
-							height 22px;
-							border-radius 2px
-						.author-name
-							padding-left 3px
-							white-space nowrap
-					.author-text
-						color $uni-text-light-color
-						padding-left 3px
-						flex 1
-						white-space: nowrap;
-						text-overflow: ellipsis;
-						overflow: hidden;
-						word-break: break-all;
-			.right
-				padding-left: 12px;
-				overflow hidden
-				flex-shrink 0
-				.img
-					border-radius: 4px;
-					height: 60px;
-					width: 90px;
-		.bottom
-			display flex
-			font-size 12px
-			line-height 30px
-			justify-content flex-end
-			view
-				color $uni-text-light-color
-			.num1
-				margin-right 10px
 .center
 	text-align center
 	margin 20px 0
