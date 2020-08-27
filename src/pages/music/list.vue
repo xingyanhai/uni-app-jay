@@ -6,8 +6,12 @@
 			<view class="item" v-for="(value, index) in dataList"
 				  :key="index"
 				  @tap="toDetail(value)">
-				<view class="title">
-					{{value.name}}
+				<view class="content">
+					<view class="left">
+						<text class="index-text">{{index + 1}}</text>
+						<text class="title">{{value.name}}</text>
+					</view>
+					<text @click.stop="downloadClick(value)" class="xyh-icon down-icon">&#xe601;</text>
 				</view>
 			</view>
 		</view>
@@ -36,6 +40,7 @@
 				loading: false,
 				backgroundAudioManager: null,
 				innerAudioContext: null,
+				fileIdPrefix: 'cloud://test-xyh-jay.7465-test-xyh-jay-1302967778/jay',
 				poster: 'https://tvax3.sinaimg.cn/crop.0.0.1080.1080.180/6e48db9ely8ghjt7jvbg2j20u00u0god.jpg?KID=imgbed,tva&Expires=1598438463&ssig=%2FUmJE4SGIz',
 			};
 		},
@@ -98,24 +103,59 @@
 					this.dataList = list;
 				}
 			},
-
-			toDetail (data) {
+			downloadClick (item) {
+				let src = `${this.fileIdPrefix}/${item.fileID}`
+				console.log(src)
 				uni.showLoading({
-					title: '请稍后...'
+					title: '资源加载中...'
 				})
-				let fileIdPrefix = 'cloud://test-xyh-jay.7465-test-xyh-jay-1302967778/jay'
 				wx.cloud.getTempFileURL({
-					fileList: [`${fileIdPrefix}/${data.fileID}`],
+					fileList: [src],
 					success: res => {
-						console.log(res.fileList)
-						this.play({
-							...data,
-							...res.fileList[0]
+						console.log(res)
+
+						wx.downloadFile({
+							url: res.fileList[0].tempFileURL, //仅为示例，并非真实的资源
+							success (res) {
+								console.log(res)
+								// 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
+								if (res.statusCode === 200) {
+									console.log(res.tempFilePath)
+									wx.saveFile({
+										tempFilePath: res.tempFilePath,
+										success (res) {
+											uni.hideLoading()
+											console.log(res.savedFilePath)
+										},
+										fail(res) {
+											uni.hideLoading()
+											uni.showToast({
+												title: '文件超过10M，受微信限制，无法下载！',
+												icon: "none"
+											})
+											console.log('file ', res)
+										}
+									})
+								}
+							}
 						})
-						uni.hideLoading()
 					},
 					fail: console.error
 				})
+
+			},
+			toDetail (data) {
+				this.play({
+					...data,
+				})
+				// wx.cloud.getTempFileURL({
+				// 	fileList: [`${fileIdPrefix}/${data.fileID}`],
+				// 	success: res => {
+				//
+				// 		uni.hideLoading()
+				// 	},
+				// 	fail: console.error
+				// })
 			},
 			play (item) {
 				console.log(item)
@@ -124,15 +164,18 @@
 				backgroundAudioManager.epname = '周杰伦'
 				backgroundAudioManager.singer = '周杰伦'
 				backgroundAudioManager.coverImgUrl = this.poster
+				let fileIdPrefix = this.fileIdPrefix
 				// 设置了 src 之后会自动播放
-				backgroundAudioManager.src = item.fileID
-				console.log('play',item, backgroundAudioManager)
-				backgroundAudioManager.play()
+				backgroundAudioManager.src = `${fileIdPrefix}/${item.fileID}`
 				backgroundAudioManager.onError(e => {
 					console.log('error', e)
 				})
+				uni.showLoading({
+					title: '请稍后...'
+				})
 				backgroundAudioManager.onPlay(e => {
 					console.log('Play', e)
+					uni.hideLoading()
 				})
 
 				// let innerAudioContext = this.innerAudioContext
@@ -192,14 +235,27 @@
 	width 100%
 	.item
 		display block
-		margin 5px
-		padding 5px
-		border-radius 5px
+		padding 5px 10px 5px 20px
 		background-color #fff
-		.title
-			width 100%;
-			font-size 18px
-			margin 5px 0
+		margin-bottom 0.5px
+		.content
+			display flex
+			justify-content space-between
+			align-items center
+			.left
+				display flex
+				align-items center
+			.index-text
+				font-size 12px
+				color $uni-text-light-color
+				margin-right 15px
+			.title
+				font-size 18px
+				margin 5px 0
+			.down-icon
+				line-height 24px
+				padding 0 10px
+				color $uni-color-primary
 .center
 	text-align center
 	margin 20px 0
