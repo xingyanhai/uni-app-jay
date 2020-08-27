@@ -2,13 +2,19 @@
 
 <template>
 	<view class="wrap">
+		<view class="page-title">
+			周杰伦的歌曲
+		</view>
 		<view class="list" v-if="dataList && dataList.length">
 			<view class="item" v-for="(value, index) in dataList"
 				  :key="index"
-				  @tap="toDetail(value)">
+				  @tap="toDetail(value, index)">
 				<view class="content">
 					<view class="left">
-						<text class="index-text">{{index + 1}}</text>
+						<text class="index-text">
+							<text class="xyh-icon icon-play" v-if="index===playIndex">&#xe618;</text>
+							<text v-else>{{index + 1}}</text>
+						</text>
 						<text class="title">{{value.name}}</text>
 					</view>
 					<text @click.stop="downloadClick(value)" class="xyh-icon down-icon">&#xe601;</text>
@@ -42,10 +48,11 @@
 				innerAudioContext: null,
 				fileIdPrefix: 'cloud://test-xyh-jay.7465-test-xyh-jay-1302967778/jay',
 				poster: 'https://tvax3.sinaimg.cn/crop.0.0.1080.1080.180/6e48db9ely8ghjt7jvbg2j20u00u0god.jpg?KID=imgbed,tva&Expires=1598438463&ssig=%2FUmJE4SGIz',
+				playIndex: ''
 			};
 		},
 		components: {SearchBtn},
-        computed: mapState(['userInfo']),
+        computed: mapState(['userInfo','config']),
 		methods: {
 			...mapMutations(['getUserInfo','setStateData']),
 			copy (item) {
@@ -144,7 +151,14 @@
 				})
 
 			},
-			toDetail (data) {
+			toDetail (data, i) {
+				if(!this.config.showAudio) {
+					return
+				}
+				if (this.playIndex === i) {
+					return
+				}
+				this.playIndex = i
 				this.play({
 					...data,
 				})
@@ -158,7 +172,6 @@
 				// })
 			},
 			play (item) {
-				console.log(item)
 				let backgroundAudioManager = this.backgroundAudioManager
 				backgroundAudioManager.title = item.name
 				backgroundAudioManager.epname = '周杰伦'
@@ -172,10 +185,6 @@
 				})
 				uni.showLoading({
 					title: '请稍后...'
-				})
-				backgroundAudioManager.onPlay(e => {
-					console.log('Play', e)
-					uni.hideLoading()
 				})
 
 				// let innerAudioContext = this.innerAudioContext
@@ -203,6 +212,32 @@
 		},
 		async onLoad() {
 			this.backgroundAudioManager = wx.getBackgroundAudioManager()
+			this.backgroundAudioManager.onPlay(e => {
+				console.log('监听背景音频播放事件', e)
+				uni.hideLoading()
+			})
+			this.backgroundAudioManager.onPause(e => {
+				console.log('监听背景音频暂停事件', e)
+				uni.hideLoading()
+				this.playIndex = ''
+			})
+			this.backgroundAudioManager.onStop(e => {
+				console.log('监听背景音频停止事件', e)
+				uni.hideLoading()
+				this.playIndex = ''
+			})
+			this.backgroundAudioManager.onError(e => {
+				console.log('监听背景音频播放错误事件', e)
+				uni.hideLoading()
+				uni.showToast({
+					title: '播放失败，请重试！',
+					icon: "none"
+				})
+				this.playIndex = ''
+			})
+
+
+
 			// this.innerAudioContext = wx.createInnerAudioContext()
 			wx.setInnerAudioOption({
 				// （仅在 iOS 生效）是否遵循静音开关，设置为 false 之后，即使是在静音模式下，也能播放声音
@@ -227,7 +262,12 @@
 .wrap
 	display block
 	width 100%
-
+.page-title
+	display block
+	text-align center
+	padding-top 50px
+	line-height 80px
+	font-size 40px
 
 .list
 	display flex
@@ -248,7 +288,8 @@
 			.index-text
 				font-size 12px
 				color $uni-text-light-color
-				margin-right 15px
+				margin-right 10px
+				min-width 20px
 			.title
 				font-size 18px
 				margin 5px 0
@@ -262,4 +303,6 @@
 	color #999
 	width 100%
 	display block
+.icon-play
+	color $uni-color-primary
 </style>
