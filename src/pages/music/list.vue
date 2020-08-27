@@ -299,7 +299,7 @@
 					index = 1
 				}
 				this.backgroundImgIndex = index
-			}, 10000)
+			}, 60000)
 		}
 	}
 </script>
