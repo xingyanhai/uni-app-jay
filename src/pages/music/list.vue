@@ -5,7 +5,10 @@
 		<view class="fix-bg-cover"></view>
 		<image class="fix-bg-img" mode="aspectFill" :src="`cloud://test-xyh-jay.7465-test-xyh-jay-1302967778/jay-img/jay${backgroundImgIndex}.jpg`"></image>
 		<view class="page-title">
-			周杰伦的歌曲
+			{{config.pageTitle || '周杰伦的歌曲'}}
+		</view>
+		<view class="page-tip">
+			{{config.pageTip || ''}}
 		</view>
 		<view class="main-wrap">
 			<view class="main-left" v-if="config.showOtherApp">
@@ -292,14 +295,14 @@
 			})
 			this.getData()
 
-
+			// 换壁纸
 			setInterval(() => {
 				let index = this.backgroundImgIndex + 1
 				if(index === 6) {
 					index = 1
 				}
 				this.backgroundImgIndex = index
-			}, 60000)
+			}, 100000)
 		}
 	}
 </script>
@@ -314,15 +317,20 @@
 	text-align center
 	padding-top 50px
 	line-height 80px
-	font-size 40px
-
+	font-size 32px
+.page-tip
+	display block
+	text-align center
+	color #fff
+	font-size 14px
+	line-height 24px
 .list
 	display flex
 	flex-direction column
 	width 100%
 	.item
 		display block
-		padding 5px 10px 5px 20px
+		padding 10px 10px 10px 20px
 		background-color rgba(255,255,255,0.6)
 		margin-bottom 0.5px
 		.content
