@@ -2,27 +2,47 @@
 
 <template>
 	<view class="wrap">
+		<view class="fix-bg-cover"></view>
+		<image class="fix-bg-img" mode="aspectFill" :src="`cloud://test-xyh-jay.7465-test-xyh-jay-1302967778/jay-img/jay${backgroundImgIndex}.jpg`"></image>
 		<view class="page-title">
 			周杰伦的歌曲
 		</view>
-		<view class="list" v-if="dataList && dataList.length">
-			<view class="item" v-for="(value, index) in dataList"
-				  :key="index"
-				  @tap="toDetail(value, index)">
-				<view class="content">
-					<view class="left">
-						<text class="index-text">
-							<text class="xyh-icon icon-play" v-if="index===playIndex">&#xe618;</text>
-							<text v-else>{{index + 1}}</text>
-						</text>
-						<text class="title">{{value.name}}</text>
+		<view class="main-wrap">
+			<view class="main-left" v-if="config.showOtherApp">
+				<view class="main-left-fixed">
+					<view class="other-app-item" @click="toOtherMiniProgram(value)"  v-for="(value, index) in shareList" :key="index" v-if="index%2===0">
+						<text class="list-text">{{value.shareText || '更多'}}</text>
 					</view>
-					<text @click.stop="downloadClick(value)" class="xyh-icon down-icon">&#xe601;</text>
 				</view>
 			</view>
-		</view>
-		<view class="common-no-data-box">
-			{{loadMoreText || ''}}
+			<view class="main-center">
+				<view class="list" v-if="dataList && dataList.length">
+					<view class="item" v-for="(value, index) in dataList"
+						  :key="index"
+						  @tap="toDetail(value, index)">
+						<view class="content">
+							<view class="left">
+								<text class="index-text">
+									<text class="xyh-icon icon-play" v-if="index===playIndex">&#xe618;</text>
+									<text v-else>{{index + 1}}</text>
+								</text>
+								<text class="title">{{value.name}}</text>
+							</view>
+							<text @click.stop="downloadClick(value)" class="xyh-icon down-icon">&#xe601;</text>
+						</view>
+					</view>
+				</view>
+				<view class="common-no-data-box">
+					{{loadMoreText || ''}}
+				</view>
+			</view>
+			<view class="main-right" v-if="config.showOtherApp">
+				<view class="main-right-fixed">
+					<view class="other-app-item" @click="toOtherMiniProgram(value)"  v-for="(value, index) in shareList" :key="index" v-if="index%2===1">
+						<text class="list-text">{{value.shareText || '更多'}}</text>
+					</view>
+				</view>
+			</view>
 		</view>
 	</view>
 </template>
@@ -48,11 +68,21 @@
 				innerAudioContext: null,
 				fileIdPrefix: 'cloud://test-xyh-jay.7465-test-xyh-jay-1302967778/jay',
 				poster: 'https://tvax3.sinaimg.cn/crop.0.0.1080.1080.180/6e48db9ely8ghjt7jvbg2j20u00u0god.jpg?KID=imgbed,tva&Expires=1598438463&ssig=%2FUmJE4SGIz',
-				playIndex: ''
+				playIndex: '',
+				backgroundImgIndex: 1
 			};
 		},
 		components: {SearchBtn},
-        computed: mapState(['userInfo','config']),
+        computed: {
+			...mapState(['userInfo','config']),
+			shareList () {
+				let arr = []
+				if(this.config && this.config.shareMiniProgramList) {
+					return  this.config.shareMiniProgramList
+				}
+				return arr
+			}
+		},
 		methods: {
 			...mapMutations(['getUserInfo','setStateData']),
 			copy (item) {
@@ -66,6 +96,14 @@
 								console.log(res.data) // data
 							}
 						})
+					}
+				})
+			},
+			toOtherMiniProgram (item) {
+				wx.navigateToMiniProgram({
+					appId: item.appId,
+					success(res) {
+						// 打开成功1
 					}
 				})
 			},
@@ -253,6 +291,15 @@
 				}
 			})
 			this.getData()
+
+
+			setInterval(() => {
+				let index = this.backgroundImgIndex + 1
+				if(index === 6) {
+					index = 1
+				}
+				this.backgroundImgIndex = index
+			}, 10000)
 		}
 	}
 </script>
@@ -276,7 +323,7 @@
 	.item
 		display block
 		padding 5px 10px 5px 20px
-		background-color #fff
+		background-color rgba(255,255,255,0.6)
 		margin-bottom 0.5px
 		.content
 			display flex
@@ -291,7 +338,7 @@
 				margin-right 10px
 				min-width 20px
 			.title
-				font-size 18px
+				font-size 16px
 				margin 5px 0
 			.down-icon
 				line-height 24px
@@ -305,4 +352,64 @@
 	display block
 .icon-play
 	color $uni-color-primary
+.main-wrap
+	display flex
+	.main-left
+		width 50px
+		flex-shrink 1
+		.main-left-fixed
+			position fixed
+			top 0
+			left 0
+			bottom 0
+			width 50px
+			display flex
+			flex-direction column
+			justify-content center
+	.main-right
+		width 50px
+		flex-shrink 1
+		.main-right-fixed
+			position fixed
+			right 0
+			top 0
+			bottom 0
+			width 50px
+			display flex
+			flex-direction column
+			justify-content center
+	.main-center
+		flex 1
+		display block
+.other-app-item
+	width 100%
+	background-color $uni-color-primary
+	color #fff
+	font-size 12px
+	padding 10px
+	text-align center
+	display block
+	&:first-child
+		border-radius 10px 10px 0 0
+	&:last-child
+		border-radius 0 0 10px 10px
+.fix-bg-img
+	position fixed
+	top 0
+	left 0
+	right 0
+	bottom 0
+	z-index -10
+	width 100%
+	height 100%
+	filter blur(3px)
+	transition .5s ease-in-out
+.fix-bg-cover
+	position fixed
+	top 0
+	left 0
+	right 0
+	bottom 0
+	z-index -5
+	background-color rgba(255,255,255, 0.5)
 </style>
