@@ -276,6 +276,11 @@
 				})
 				this.playIndex = ''
 			})
+			// 结束后接着放
+			this.backgroundAudioManager.onEnded(e => {
+				console.log('监听背景音频自然播放结束事件', e)
+				this.backgroundAudioManager.play()
+			})
 
 
 
