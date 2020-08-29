@@ -31,7 +31,7 @@
 								</text>
 								<text class="title">{{value.name}}</text>
 							</view>
-							<text @click.stop="downloadClick(value)" class="xyh-icon down-icon">&#xe601;</text>
+							<text v-if="config && config.showDownload" @click.stop="downloadClick(value)" class="xyh-icon down-icon">&#xe601;</text>
 						</view>
 					</view>
 				</view>
