@@ -221,9 +221,11 @@
 				let fileIdPrefix = this.fileIdPrefix
 				// 设置了 src 之后会自动播放
 				backgroundAudioManager.src = `${fileIdPrefix}/${item.fileID}`
-				backgroundAudioManager.onError(e => {
-					console.log('error', e)
-				})
+
+                backgroundAudioManager.onEnded(e => {
+                  console.log('监听背景音频自然播放结束事-件', e)
+                  this.play(item)
+                })
 				uni.showLoading({
 					title: '请稍后...'
 				})
@@ -276,11 +278,6 @@
 				})
 				this.playIndex = ''
 			})
-			// 结束后接着放
-			this.backgroundAudioManager.onEnded(e => {
-				console.log('监听背景音频自然播放结束事件', e)
-				this.backgroundAudioManager.play()
-			})
 
 
 
@@ -307,7 +304,7 @@
 					index = 1
 				}
 				this.backgroundImgIndex = index
-			}, 100000)
+			}, 180000)
 		}
 	}
 </script>
