@@ -1,11 +1,7 @@
-
-// 1. 建立与改文件平行的文件夹’歌曲‘
-// 2. node 执行改文件；会输出与改文件平行的 output.json
-// 3. 打开musicList数据库 导入 output.json
-
 //获取项目工程里的图片
-var fs = require('fs');//引用文件系统模块
 
+var fs = require('fs');//引用文件系统模块
+const NodeID3 = require('node-id3')
 function readFileList(path, filesList) {
     var files = fs.readdirSync(path);
     files.forEach(function (itm, index) {
@@ -32,21 +28,42 @@ var getFiles = {
         return filesList;
     },
 };
-//获取文件夹下的所有歌曲文件名
-let musicList = getFiles.getFileList("./歌曲/").map(e => {
-    return {
-        name: e.filename,
-        fileID: e.filename
+async function operaFile() {
+    //获取文件夹下的所有歌曲文件名
+    let srcPath = './歌曲/'
+    let distPath = './歌曲copy/'
+    // fs.mkdirSync(distPath)
+    let musicList = []
+    let allFileList = getFiles.getFileList(srcPath);
+    for(let i = 0; i<allFileList.length;i++) {
+        let e = allFileList[i]
+        let index = i
+        let lastName = e.filename.slice(e.filename.lastIndexOf('.') + 1)
+        let newFileName = `${index}.${lastName}`
+        let info = await new Promise((resolve, reject) => {
+            NodeID3.read(`${e.path}${e.filename}`,(err, tags) => {
+                resolve(tags)
+            })
+        })
+        console.log(info.title)
+        // fs.copyFileSync(`${e.path}${e.filename}`, `${distPath}${newFileName}`)
+        musicList.push({
+            name: e.filename.slice(0, e.filename.lastIndexOf('.')),
+            fileID: newFileName
+        })
     }
-})
-let str = ''
-musicList.forEach(e => {
-    str += JSON.stringify(e)
-})
-fs.writeFile('./output.json', str, function(err){
-    if(err) {
-        console.log(err)
-    } else {
-        console.log('写入成功！！！')
-    }
-});
+
+    let str = ''
+    musicList.forEach(e => {
+        str += JSON.stringify(e)
+    })
+    fs.writeFile('./output.json', str, function(err){
+        if(err) {
+            console.log(err)
+        } else {
+            console.log('写入成功！！！')
+        }
+    });
+}
+
+operaFile()
