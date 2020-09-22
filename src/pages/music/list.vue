@@ -31,7 +31,7 @@
 								</text>
 								<text class="title">{{value.name}}</text>
 							</view>
-							<text @click.stop="downloadClick(value)" class="xyh-icon down-icon">&#xe601;</text>
+							<text v-if="config && config.showDownload" @click.stop="downloadClick(value)" class="xyh-icon down-icon">&#xe601;</text>
 						</view>
 					</view>
 				</view>
@@ -221,15 +221,14 @@
 				let fileIdPrefix = this.fileIdPrefix
 				// 设置了 src 之后会自动播放
 				backgroundAudioManager.src = `${fileIdPrefix}/${item.fileID}`
-				// 结束后接着放1
-				backgroundAudioManager.onEnded(e => {
-					console.log('监听背景音频自然播放结束事件--', e)
-					this.play(item)
-				})
+
+                backgroundAudioManager.onEnded(e => {
+                  console.log('监听背景音频自然播放结束事-件', e)
+                  this.play(item)
+                })
 				uni.showLoading({
 					title: '请稍后...'
 				})
-
 
 				// let innerAudioContext = this.innerAudioContext
 				// innerAudioContext.autoplay = true
@@ -305,7 +304,7 @@
 					index = 1
 				}
 				this.backgroundImgIndex = index
-			}, 100000)
+			}, 180000)
 		}
 	}
 </script>
