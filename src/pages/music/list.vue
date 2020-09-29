@@ -69,7 +69,6 @@
 				loading: false,
 				backgroundAudioManager: null,
 				innerAudioContext: null,
-				fileIdPrefix: 'cloud://test-xyh-jay.7465-test-xyh-jay-1302967778/jay',
 				poster: 'https://tvax3.sinaimg.cn/crop.0.0.1080.1080.180/6e48db9ely8ghjt7jvbg2j20u00u0god.jpg?KID=imgbed,tva&Expires=1598438463&ssig=%2FUmJE4SGIz',
 				playIndex: '',
 				backgroundImgIndex: 1
@@ -84,6 +83,9 @@
 					return  this.config.shareMiniProgramList
 				}
 				return arr
+			},
+			fileIdPrefix () {
+				return this.config.fileIdPrefix
 			}
 		},
 		methods: {
@@ -152,7 +154,7 @@
 				}
 			},
 			downloadClick (item) {
-				let src = `${this.fileIdPrefix}/${item.fileID}`
+				let src = item.src || `${this.fileIdPrefix}/${item.fileID}`
 				console.log(src)
 				uni.showLoading({
 					title: '资源加载中...'
@@ -193,24 +195,26 @@
 
 			},
 			toDetail (data, i) {
-				if(!this.config.showAudio) {
-					return
-				}
 				if (this.playIndex === i) {
 					return
 				}
-				this.playIndex = i
-				this.play({
-					...data,
-				})
-				// wx.cloud.getTempFileURL({
-				// 	fileList: [`${fileIdPrefix}/${data.fileID}`],
-				// 	success: res => {
-				//
-				// 		uni.hideLoading()
-				// 	},
-				// 	fail: console.error
-				// })
+				if(this.config.showAudio) {
+					this.playIndex = i
+					this.play({
+						...data,
+					})
+				} else if (this.config.downloadUrl) {
+					wx.setClipboardData({
+						data: this.config.downloadUrl,
+						success (res) {
+							wx.getClipboardData({
+								success (res) {
+									console.log(res.data) // data
+								}
+							})
+						}
+					})
+				}
 			},
 			play (item) {
 				let backgroundAudioManager = this.backgroundAudioManager
@@ -220,7 +224,7 @@
 				backgroundAudioManager.coverImgUrl = this.poster
 				let fileIdPrefix = this.fileIdPrefix
 				// 设置了 src 之后会自动播放
-				backgroundAudioManager.src = `${fileIdPrefix}/${item.fileID}`
+				backgroundAudioManager.src = item.src || `${fileIdPrefix}/${item.fileID}`
 
                 backgroundAudioManager.onEnded(e => {
                   console.log('监听背景音频自然播放结束事-件', e)
